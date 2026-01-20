@@ -1,0 +1,28 @@
+email-validator
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+sqlalchemy
+alembic
+asyncpg
+psycopg2-binary
+pgvector
+redis
+celery
+minio
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]
+httpx
+networkx
+shapely
+trimesh
+numpy
+# pandas
+
+openai
+# langchain
+# langchain-community
+# langchain-core
+# langchain-openai
