@@ -71,20 +71,33 @@ cd backend
 .\venv\Scripts\python tests/test_api.py
 ```
 
+**ML Training (Phase 2):**
+```bash
+# 1. Train GNN Encoder
+python ml/train_gnn.py
+
+# 2. Train Diffusion Model
+python ml/train_diffusion.py
+```
+
 ## Executive Overview
 A production-grade, AI-first architectural design system capable of converting natural language prompts into validated 2D floorplans, 3D models, and BIM-compliant IFC files.
 
 ## System Architecture
-User Prompt → LLM Parser → Constraint Graph → Diffusion Model → Vector Floorplan → 3D Extrusion → IFC / GLB Export → Web Viewer
+1. **Prompt Parsing**: LLM (OpenAI GPT-4) converts text -> `ArchitecturalProgram`.
+2. **Graph Construction**: Program -> NetworkX Constraint Graph.
+3. **Graph Encoding**: GNN (GATConv) encodes the graph into a latent vector.
+4. **Layout Generation**: Conditional Diffusion Model generates layout geometry from the latent vector.
+5. **Visualization**: Backend converts layout vectors to SVG for Frontend display.
 
 ## Tech Stack
 - **Backend**: Python 3.11, FastAPI, PostgreSQL + pgvector, Redis, Celery
-- **AI/ML**: PyTorch, LangChain, OpenAI/Claude, Hugging Face
-- **Geometry**: pythonOCC, Shapely, Trimesh, IfcOpenShell
-- **Frontend**: React, Three.js, ThatOpen Engine
+- **AI/ML**: PyTorch, PyTorch Geometric, OpenAI API, NetworkX
+- **Geometry**: Shapely, Trimesh
+- **Frontend**: React, Vite, TailwindCSS
 
 ## Project Structure
 - `/backend`: FastAPI application and core logic
-- `/ml`: Machine learning pipelines (training, inference)
+- `/ml`: Machine learning pipelines (GNN + Diffusion)
 - `/infrastructure`: Docker and deployment configuration
 - `/frontend`: Web application (React)

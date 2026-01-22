@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { LayoutDashboard, Box, Settings, Loader2 } from 'lucide-react'
+import ModelViewer from './components/ModelViewer'
 
 // Types based on backend schemas
 interface Room {
@@ -16,7 +17,12 @@ interface ArchitecturalProgram {
 function App() {
   const [prompt, setPrompt] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
+  const [generationMode, setGenerationMode] = useState<'baseline' | 'diffusion'>('baseline')
+  const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d')
+  
   const [layoutSvg, setLayoutSvg] = useState<string | null>(null)
+  const [glbContent, setGlbContent] = useState<string | null>(null)
+  
   const [program, setProgram] = useState<ArchitecturalProgram | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -24,6 +30,7 @@ function App() {
     e.preventDefault()
     setIsGenerating(true)
     setLayoutSvg(null)
+    setGlbContent(null)
     setError(null)
     setProgram(null)
 
@@ -39,8 +46,12 @@ function App() {
       const parsedProgram = await parseResponse.json()
       setProgram(parsedProgram)
 
-      // 2. Generate Baseline Layout
-      const genResponse = await fetch('/api/v1/generation/baseline', {
+      // 2. Generate Layout
+      const endpoint = generationMode === 'diffusion' 
+        ? '/api/v1/generation/diffusion' 
+        : '/api/v1/generation/baseline'
+
+      const genResponse = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(parsedProgram),
@@ -49,6 +60,13 @@ function App() {
       if (!genResponse.ok) throw new Error('Failed to generate layout')
       const layoutData = await genResponse.json()
       setLayoutSvg(layoutData.svg_content)
+      
+      if (layoutData.glb_content) {
+        setGlbContent(layoutData.glb_content)
+        setViewMode('3d') // Auto-switch to 3D if available
+      } else {
+        setViewMode('2d')
+      }
 
     } catch (err) {
       console.error(err)
@@ -106,6 +124,39 @@ function App() {
                 onChange={(e) => setPrompt(e.target.value)}
               />
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Generation Model
+              </label>
+              <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg">
+                <button
+                  onClick={() => setGenerationMode('baseline')}
+                  className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+                    generationMode === 'baseline'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  Template Match
+                </button>
+                <button
+                  onClick={() => setGenerationMode('diffusion')}
+                  className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+                    generationMode === 'diffusion'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  AI Diffusion
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {generationMode === 'baseline' 
+                  ? 'Fast, deterministic matching against standard layouts.' 
+                  : 'Creative AI generation using Graph Diffusion.'}
+              </p>
+            </div>
             
             <button
               onClick={handleGenerate}
@@ -155,42 +206,50 @@ function App() {
           {/* Visualization Viewport */}
           <div className="flex-1 bg-gray-100 relative flex flex-col">
             
-            {/* Toggle View (Placeholder) */}
+            {/* Toggle View */}
             <div className="absolute top-4 right-4 z-10 bg-white rounded-lg shadow-sm border border-gray-200 p-1 flex">
-              <button className="px-3 py-1 text-sm font-medium bg-gray-100 rounded text-gray-800">2D Plan</button>
-              <button className="px-3 py-1 text-sm font-medium text-gray-500 hover:text-gray-800">3D Model</button>
+              <button 
+                onClick={() => setViewMode('2d')}
+                className={`px-3 py-1 text-sm font-medium rounded transition-colors ${
+                  viewMode === '2d' ? 'bg-gray-100 text-gray-800' : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                2D Plan
+              </button>
+              <button 
+                onClick={() => setViewMode('3d')}
+                disabled={!glbContent}
+                className={`px-3 py-1 text-sm font-medium rounded transition-colors ${
+                  viewMode === '3d' ? 'bg-gray-100 text-gray-800' : 'text-gray-500 hover:text-gray-800'
+                } ${!glbContent ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                3D Model
+              </button>
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 flex items-center justify-center p-8">
-              {layoutSvg ? (
-                <div 
-                  className="bg-white shadow-xl rounded-lg p-8 max-w-full max-h-full overflow-auto"
-                  dangerouslySetInnerHTML={{ __html: layoutSvg }}
-                />
-              ) : (
+            <div className="flex-1 flex items-center justify-center p-8 h-full">
+              {!layoutSvg && !glbContent ? (
                 <div className="text-center text-gray-400">
                   <LayoutDashboard size={48} className="mx-auto mb-4 opacity-50" />
                   <p>Enter a prompt to generate a floorplan</p>
                 </div>
+              ) : (
+                <>
+                  {viewMode === '2d' && layoutSvg && (
+                    <div 
+                      className="bg-white shadow-xl rounded-lg p-8 max-w-full max-h-full overflow-auto"
+                      dangerouslySetInnerHTML={{ __html: layoutSvg }}
+                    />
+                  )}
+                  {viewMode === '3d' && glbContent && (
+                    <div className="w-full h-full shadow-xl rounded-lg overflow-hidden border border-gray-200 bg-gray-900">
+                      <ModelViewer glbBase64={glbContent} />
+                    </div>
+                  )}
+                </>
               )}
             </div>
-            
-            {/* 3D Canvas (Hidden for MVP 2D focus, or we can show it below) */}
-            {/* 
-            <div className="h-1/3 border-t border-gray-200 relative">
-               <Canvas camera={{ position: [5, 5, 5], fov: 50 }}>
-                  <ambientLight intensity={0.5} />
-                  <pointLight position={[10, 10, 10]} />
-                  <OrbitControls makeDefault />
-                  <gridHelper args={[20, 20]} />
-                  <mesh position={[0, 0.5, 0]}>
-                    <boxGeometry />
-                    <meshStandardMaterial color="orange" />
-                  </mesh>
-                </Canvas>
-            </div>
-            */}
           </div>
         </div>
       </div>
