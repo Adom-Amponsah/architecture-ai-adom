@@ -1,16 +1,25 @@
-import torch
 import os
 import networkx as nx
 import numpy as np
 from typing import Dict, Any, List
 from pathlib import Path
-from app.ml_models.graph_encoder import ConstraintGraphEncoder
-from app.ml_models.diffusion import LayoutDiffusionModel, DiffusionSampler
 from app.ml_models.utils import convert_nx_to_pyg_data
+
+try:
+    import torch
+    from app.ml_models.graph_encoder import ConstraintGraphEncoder
+    from app.ml_models.diffusion import LayoutDiffusionModel, DiffusionSampler
+    TORCH_AVAILABLE = True
+except ImportError:
+    TORCH_AVAILABLE = False
+    print("WARNING: PyTorch not found. ML inference will be disabled.")
 
 class MLInferenceService:
     def __init__(self):
-        self.device = torch.device('cpu') # Inference on CPU is fine for MVP
+        self.device = 'cpu'
+        if TORCH_AVAILABLE:
+            self.device = torch.device('cpu') # Inference on CPU is fine for MVP
+        
         self.base_path = Path(__file__).resolve().parent.parent / "ml_models" / "checkpoints"
         
         self.gnn = None
@@ -19,6 +28,10 @@ class MLInferenceService:
         self.models_loaded = False
         
     def load_models(self):
+        if not TORCH_AVAILABLE:
+            print("Cannot load models: PyTorch is not available.")
+            return
+
         if self.models_loaded:
             return
 
@@ -53,6 +66,9 @@ class MLInferenceService:
         """
         Run full inference pipeline: Graph Dict -> NetworkX -> PyG -> GNN -> Diffusion -> SVG & Geometry
         """
+        if not TORCH_AVAILABLE:
+            raise RuntimeError("ML Inference is unavailable because PyTorch is not installed.")
+
         if not self.models_loaded:
             self.load_models()
             

@@ -22,8 +22,8 @@ numpy
 # pandas
 
 openai
-torch>=2.2.0
-torch-geometric>=2.5.0
+# torch>=2.2.0
+# torch-geometric>=2.5.0
 # langchain
 # langchain-community
 # langchain-core

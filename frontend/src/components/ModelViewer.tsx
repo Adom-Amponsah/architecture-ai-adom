@@ -1,37 +1,46 @@
-import React, { Suspense, useMemo } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, useGLTF, Stage, Grid } from '@react-three/drei';
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 interface ModelViewerProps {
   glbBase64: string;
 }
 
+function ModelContent({ url }: { url: string }) {
+  const { scene } = useGLTF(url);
+  return <primitive object={scene} />;
+}
+
 function Model({ glbBase64 }: { glbBase64: string }) {
-  const gltf = useMemo(() => {
-    // Decode base64 to blob
-    const byteCharacters = atob(glbBase64);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      // Decode base64 to blob
+      const byteCharacters = atob(glbBase64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'model/gltf-binary' });
+      const objectUrl = URL.createObjectURL(blob);
+      
+      setUrl(objectUrl);
+
+      // Cleanup
+      return () => {
+        URL.revokeObjectURL(objectUrl);
+        useGLTF.clear(objectUrl);
+      };
+    } catch (e) {
+      console.error("Error decoding GLB:", e);
     }
-    const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], { type: 'model/gltf-binary' });
-    const url = URL.createObjectURL(blob);
-    
-    // We can't use useGLTF hook directly with a dynamic URL created inside render loop easily
-    // But since we want to trigger reload when prop changes, let's use a loader manually 
-    // or rely on the fact that we are passing this url to a component.
-    
-    return url;
   }, [glbBase64]);
 
-  // useGLTF expects a url string.
-  // Note: useGLTF caches based on URL.
-  const { scene } = useGLTF(gltf);
+  if (!url) return null;
 
-  return <primitive object={scene} />;
+  return <ModelContent url={url} />;
 }
 
 const ModelViewer: React.FC<ModelViewerProps> = ({ glbBase64 }) => {

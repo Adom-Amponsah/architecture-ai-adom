@@ -1,7 +1,12 @@
 import networkx as nx
-import torch
-from torch_geometric.utils import from_networkx
 from typing import Dict, Any
+
+try:
+    import torch
+    from torch_geometric.utils import from_networkx
+    TORCH_AVAILABLE = True
+except ImportError:
+    TORCH_AVAILABLE = False
 
 # Room Types mapping for encoding (Must match training)
 ROOM_TYPES = {
@@ -22,6 +27,9 @@ def convert_nx_to_pyg_data(G: nx.Graph):
     Convert NetworkX graph (from GraphBuilder) to PyTorch Geometric Data object
     compatible with the trained GNN encoder.
     """
+    if not TORCH_AVAILABLE:
+        raise RuntimeError("PyTorch is not available. Cannot convert to PyG data.")
+
     # 1. Ensure node attributes match training expectations
     # Training expects: 'type_idx' and 'area'
     
