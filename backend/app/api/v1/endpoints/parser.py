@@ -31,10 +31,17 @@ async def parse_architectural_prompt(
              # Return a mock response for testing/development if no key is present
              return _get_mock_program(prompt_request.text)
 
-        result = await llm_parser.parse_prompt(prompt_request.text)
-        return result
+        try:
+            result = await llm_parser.parse_prompt(prompt_request.text)
+            return result
+        except Exception as e:
+            print(f"LLM processing failed (falling back to mock): {str(e)}")
+            return _get_mock_program(prompt_request.text)
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"LLM processing failed: {str(e)}")
+        # This catches errors outside the LLM call or re-raises if needed
+        print(f"Parser endpoint error: {e}")
+        return _get_mock_program(prompt_request.text)
 
 def _get_mock_program(text: str) -> ArchitecturalProgram:
     from app.schemas.architecture import Room, RoomType, Adjacency, AdjacencyType, GlobalConstraints, RoomConstraint

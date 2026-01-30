@@ -57,6 +57,37 @@ TEMPLATES = [
         ]
     ),
     LayoutTemplate(
+        id="tpl_3bed_family",
+        name="Family 3-Bedroom Apartment",
+        description="Spacious 3-bedroom unit suitable for families.",
+        width=16.0,
+        height=10.0,
+        rooms=[
+            TemplateRoom(id="living", type=RoomType.LIVING_ROOM, x=0, y=0, width=8, height=6, color="#FFE0B2"),
+            TemplateRoom(id="dining", type=RoomType.DINING_ROOM, x=8, y=0, width=5, height=4, color="#F0F4C3"),
+            TemplateRoom(id="kitchen", type=RoomType.KITCHEN, x=13, y=0, width=3, height=4, color="#FFCCBC"),
+            TemplateRoom(id="corridor", type=RoomType.CORRIDOR, x=0, y=6, width=16, height=1, color="#E0E0E0"),
+            TemplateRoom(id="bed_master", type=RoomType.BEDROOM, x=0, y=7, width=5, height=3, color="#BBDEFB"),
+            TemplateRoom(id="bed_2", type=RoomType.BEDROOM, x=5, y=7, width=4, height=3, color="#E1BEE7"),
+            TemplateRoom(id="bed_3", type=RoomType.BEDROOM, x=9, y=7, width=4, height=3, color="#E1BEE7"),
+            TemplateRoom(id="bath_1", type=RoomType.BATHROOM, x=13, y=7, width=3, height=3, color="#CFD8DC"),
+            TemplateRoom(id="bath_master", type=RoomType.BATHROOM, x=13, y=4, width=3, height=2, color="#CFD8DC"),
+        ]
+    ),
+    LayoutTemplate(
+        id="tpl_office_small",
+        name="Small Office Suite",
+        description="Workspace for a small team with meeting room.",
+        width=12.0,
+        height=8.0,
+        rooms=[
+            TemplateRoom(id="open_office", type=RoomType.LIVING_ROOM, x=0, y=0, width=8, height=8, color="#B3E5FC"), # Using Living as Open Office
+            TemplateRoom(id="meeting", type=RoomType.OFFICE, x=8, y=0, width=4, height=5, color="#C5CAE9"),
+            TemplateRoom(id="pantry", type=RoomType.KITCHEN, x=8, y=5, width=2, height=3, color="#FFCCBC"),
+            TemplateRoom(id="restroom", type=RoomType.BATHROOM, x=10, y=5, width=2, height=3, color="#CFD8DC"),
+        ]
+    ),
+    LayoutTemplate(
         id="tpl_studio",
         name="Compact Studio",
         description="Open plan studio apartment.",

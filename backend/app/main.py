@@ -23,7 +23,7 @@ app = FastAPI(
 )
 
 # Mock Auth for local development without DB
-if os.getenv("MOCK_AUTH") == "true":
+if settings.MOCK_AUTH:
     print("WARNING: Running with MOCK AUTH enabled (Database not required)")
     async def mock_get_current_active_user():
         # Return a dummy user object that mimics the SQLAlchemy model
