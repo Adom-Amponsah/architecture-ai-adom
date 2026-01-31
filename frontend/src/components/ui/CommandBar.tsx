@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { ArrowRight, Terminal, Loader2, CornerDownLeft } from 'lucide-react';
+import { Terminal, Loader2, CornerDownLeft } from 'lucide-react';
 
 interface CommandBarProps {
   onSubmit: (prompt: string) => void;
