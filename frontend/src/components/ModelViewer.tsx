@@ -45,13 +45,21 @@ function Model({ glbBase64 }: { glbBase64: string }) {
 
 const ModelViewer: React.FC<ModelViewerProps> = ({ glbBase64 }) => {
   return (
-    <div className="w-full h-full bg-gray-900 rounded-lg overflow-hidden">
-      <Canvas camera={{ position: [5, 5, 5], fov: 50 }} shadows>
+    <div className="w-full h-full bg-muted/20 relative">
+      <Canvas camera={{ position: [5, 5, 5], fov: 50 }} shadows dpr={[1, 2]}>
         <Suspense fallback={null}>
-          <Stage environment="city" intensity={0.6}>
+          <Stage environment="city" intensity={0.5} adjustCamera={false}>
             <Model glbBase64={glbBase64} />
           </Stage>
-          <Grid args={[20, 20]} cellColor="white" sectionColor="white" fadeDistance={20} />
+          <Grid 
+            args={[30, 30]} 
+            cellColor="#666" 
+            sectionColor="#333" 
+            fadeDistance={30} 
+            cellThickness={0.5}
+            sectionThickness={1}
+            infiniteGrid
+          />
           <OrbitControls makeDefault autoRotate autoRotateSpeed={0.5} />
         </Suspense>
       </Canvas>
