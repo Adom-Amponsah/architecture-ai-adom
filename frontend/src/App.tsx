@@ -44,6 +44,7 @@ function App() {
 
       if (!parseResponse.ok) throw new Error('Failed to parse prompt')
       const parsedProgram = await parseResponse.json()
+      console.log('Parsed program:', parsedProgram)
       setProgram(parsedProgram)
 
       // 2. Generate Layout
@@ -59,6 +60,7 @@ function App() {
 
       if (!genResponse.ok) throw new Error('Failed to generate layout')
       const layoutData = await genResponse.json()
+      console.log('Generation response:', layoutData)
       setLayoutSvg(layoutData.svg_content)
       
       if (layoutData.glb_content) {

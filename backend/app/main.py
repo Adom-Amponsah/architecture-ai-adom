@@ -7,6 +7,9 @@ from contextlib import asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Connect to DB, Redis, etc.
     print("Starting up ARchitectureAI...")
+    key = settings.OPENAI_API_KEY or ""
+    suffix = key[-4:] if len(key) >= 4 else ""
+    print(f"OPENAI_API_KEY loaded (suffix): {suffix}")
     yield
     # Shutdown: Close connections
     print("Shutting down ARchitectureAI...")

@@ -20,7 +20,7 @@ class GeometryService:
         """
         if not TRIMESH_AVAILABLE:
             print("3D generation requested but Trimesh is unavailable.")
-            return None
+            return self._get_fallback_glb()
 
         try:
             scene = trimesh.Scene()
@@ -100,18 +100,18 @@ class GeometryService:
             return self._get_fallback_glb()
 
     def _get_fallback_glb(self) -> bytes:
-        # minimal binary GLB for a default cube
+        # minimal binary GLB for a default cube (or empty scene)
         # generated offline to ensure we always have something to show
         import base64
-        # This is a base64 encoded simple cube GLB
-        MOCK_GLB_B64 = "glTFbinary" # Placeholder, I will use a real minimal valid GLB header or just return None and let frontend handle?
-        # Better: let's try to generate a minimal mesh if trimesh works partially, 
-        # but if trimesh is broken, we can't do much without a binary blob.
+        # This is a base64 encoded minimal valid GLB (Empty scene with one node)
+        # Generated using: minimal_glb.py
+        MOCK_GLB_B64 = "Z2xURgIAAABkAAAAUAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAifSwic2NlbmVzIjpbeyJub2RlcyI6WzBdfV0sIm5vZGVzIjpbeyJuYW1lIjoiUm9vdCJ9XX0gIA=="
         
-        # Actually, let's just return None for now and let the frontend handle it gracefully 
-        # OR we can try to return a very simple manually constructed binary if we had one.
-        # For now, let's return None but log clearly.
-        return None
+        try:
+            return base64.b64decode(MOCK_GLB_B64)
+        except Exception as e:
+            print(f"Error decoding fallback GLB: {e}")
+            return None
 
     def _get_room_color_rgba(self, room_type: str) -> List[int]:
         # RGB + Alpha

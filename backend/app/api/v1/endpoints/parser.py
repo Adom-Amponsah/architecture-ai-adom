@@ -23,25 +23,17 @@ async def parse_architectural_prompt(
     if not prompt_request.text:
         raise HTTPException(status_code=400, detail="Prompt text cannot be empty")
         
+    # Check if we have an API key configured
+    from app.config import settings
+    if not settings.OPENAI_API_KEY:
+        raise HTTPException(status_code=400, detail="OPENAI_API_KEY is not set")
+
     try:
-        # Check if we have an API key configured (mock check for dev)
-        # In prod, this would fail if key is missing
-        from app.config import settings
-        if not settings.OPENAI_API_KEY:
-             # Return a mock response for testing/development if no key is present
-             return _get_mock_program(prompt_request.text)
-
-        try:
-            result = await llm_parser.parse_prompt(prompt_request.text)
-            return result
-        except Exception as e:
-            print(f"LLM processing failed (falling back to mock): {str(e)}")
-            return _get_mock_program(prompt_request.text)
-
+        result = await llm_parser.parse_prompt(prompt_request.text)
+        return result
     except Exception as e:
-        # This catches errors outside the LLM call or re-raises if needed
-        print(f"Parser endpoint error: {e}")
-        return _get_mock_program(prompt_request.text)
+        print(f"LLM processing failed: {str(e)}")
+        raise HTTPException(status_code=502, detail=f"LLM parsing failed: {str(e)}")
 
 def _get_mock_program(text: str) -> ArchitecturalProgram:
     from app.schemas.architecture import Room, RoomType, Adjacency, AdjacencyType, GlobalConstraints, RoomConstraint
